@@ -140,6 +140,135 @@ This paper proposed a deep learning-based radio estimation approach that utilize
 
 
 
+## Towards an energy-efficient Wi-Fi: An experimental study on recent standards power consumption
+François Lemercier, Anne-Cécile Orgerie. Towards an energy-efficient Wi-Fi: An experimental study on recent standards power consumption. WCNC 2025 - IEEE Wireless Communications and Networking Conference, Mar 2025, Milan, Italy. pp.1-6. ffhal-04928381f
+
+### Background:
+Conducting power consumption measurement experiments on Wi-Fi devices represent several challenges due to the complex and dynamic nature of Wi-Fi communications. Multiple factors impact significantly the power usage of the WiFi transmitter such as the strength of the signal, the traffic patterns, the environmental conditions (interference or network congestion). Furthermore, advanced features such as MIMO,
+power saving mechanisms, adaptive transmission power, or
+even beam-forming can complicate the measurement by introducing variable consumption patterns.
+
+ In addition, there is no standardized measurement process to capture the microsecondlevel fluctuations of Wi-Fi transmitters. Wi-Fi devices interact with other system components such as CPU and memory leading to inter-dependencies that make measurement difficult to isolate. Moreover, the heterogeneity of Wi-Fi standards and implementations add more complexity, as different devices may behave each in their specific way. Consequently, conducting an accurate and precise power consumption measurement experiment on Wi-Fi devices requires careful control of external factors and the use of specialized tools able to capture detailed power profiles over various states of operation.
+
+
+### Proposed Solution: 
+In this paper, the author conduct an experimental evaluation of the power consumption of a selection of USB Wi-Fi devices, focusing on the latest standards such as IEEE 802.11ax and IEEE 802.11ac. Using USB devices allows to isolate Wi-Fi behavior and to provide accurate measurements in the different MAC states: idle, transmitting, receiving, and sleeping. Such power measurement values remain scarce, although they are required for any simulation-based evaluation as input parameters, for instance in the well-know ns-3 simulator.
+
+### Methodology:
+1. Overview: 
+
+This experimentation protocol is designed to measure the energy consumption of Wi-Fi devices across different operating states: transmission (Tx), reception (Rx), idle, sensing when the channel is busy (CCA busy) and sleep. The testbed consists of modern Wi-Fi chipset (802.11ac and 802.11ax), a power measurement tool with 100k sample per second resolution, and a controlled network environment to minimize external interference. The protocol involves systematic measurement of each device listed in table below
+
+![alt text](assets/images/Power%20Consumption/Parameters.png)
+
+
+2. Experimental Setup:
+
+The setup of the test bench for the experiment:
+* An AP, a STA and an Ethernet client
+* The STA is the only Wi-Fi device associated to the AP
+* Six different models of USB Wi-Fi cards are used, the list can be seen on table below
+* The AP is a IEEE 802.11ax Tp-Link Archer AX50
+* The STAs are connected to a Dell Latitude laptop (Intel Core i7 2.80 GHz CPU, 32 GB of RAM) running Windows 10, using iperf benchmark
+* The Ethernet client is connected using an USB-C 1000 Mbps Ethernet adapter on an Apple MacBook Pro (Intel core i9 2.4 GHz, 16 GB of RAM) running iperf application on Mac OS 14.5
+* A Nordic Semi Power profiler II power meter is interconnected between the STA and the Windows PC on the power supply line of an USB extension cable. 
+* The AP is configured to deliver its maximum transmission power 
+* All the USB WiFi cards are configured to use the IEEE 802.11ac or IEEE 802.11ax, and maximum transmission power
+* The AP broadcasts its SSID on channel 5220 MHz and a bandwidth of 80 MHz, MIMO is enabled
+* Each STA device is configured to operate at its maximum speed, with a fixed channel width 
+
+![alt text](assets/images/Power%20Consumption/List%20of%20devices.png)
+
+3. Measurement Methodology
+The methodology of the measurement:
+* The measurements are carried out by sending and receiving large data packets under different configurations.
+* The power consumption is measured at the STA side of the test bench during various phases: wake-up, data transmission, reception, sleep and idle periods between transmissions
+* The current consumption data are collected with the Nordic Semi Power profiler Kit II with a sampling period of 10 µs and a granularity of 100nA
+* AP and STA are deployed in a indoor environment, with a short distance of 1 meter between each other to reach the maximum throughput available
+* There is no power measurement on the AP device, this experimentation is focused on the STA device
+
+### Experiments
+Below are the experimental results obtained for each of the considered MAC states.
+1. Idle power consumption analysis
+
+The idle state is the state when the STA, being associated with the AP, neither sends nor receives traffic. Figure below shows the mean value of the current consumption measured across multiple tests for each device. The whiskers illustrate the standard deviation of the measurements, showing a low variability of the idle current consumption, except for the Netgear A8000 device having a lower average idle current consumption with a high variability. Apart from the Netgear device, all other STA are roughly within the same order of magnitude, with the difference are between USB3 and USB2 links
+![alt text](assets/images/Power%20Consumption/idle%20curent%20consumption.png)
+ 
+2. Transmission power consumption analysis
+
+The author first measure the maximum instantaneous value of current drawn by the device during a transmission phase for each STA device, at the scale of a packet. Secondly, the author measure the power consumption of each STA device during a transmission phase of 10 seconds depending on the target bandwidth at the client side.
+
+The result of the first experiment are shown in table below
+![alt text](assets/images/Power%20Consumption/Instantaneous%20result.png) 
+
+The results of the second experiment are shown in figure below
+* TCP Traffic
+
+![alt text](assets/images/Power%20Consumption/TCP%20Traffic%20Tx.png)
+* UDP Traffic
+
+![alt text](assets/images/Power%20Consumption/UDP%20Traffic%20Tx.png)
+
+Both Figures show that increasing the target bandwidth has impact on the current consumption of the device, except for the Asus device. This may be explained by the device itself, where the chipset used (RTL8852AU IEEE
+802.11ax) is coupled to a USB2 interface which is not fast enough to saturate the maximum data-rate reachable with this Wi-Fi chipset.
+
+Also, the current consumption is lower for an UDP traffic when the traffic is slow but reaching the highest data rates, having a faster throughput, the current drawn at high speed is higher compared to a TCP traffic.
+
+3. Reception power consumption analysis
+
+To characterize the reception phase of the STA device, the same experiment as the transmission section is conducted, but the iperf server is located on the STA laptop and the client sending data is located on the Ethernet laptop. First the maximum instantaneous value of current drawn by the device during a reception phase for each STA device, at the scale of a packet is measured. Secondly, the power consumption of each STA device during a reception phase of 10 seconds depending on the target bandwidth at the client side are measured. 
+
+The results of the first reception experiment are shown in Table above in the rx curent. 
+
+The results of the second experiment are shown in Figure below.
+* TCP Traffic
+
+![alt text](assets/images/Power%20Consumption/TCP%20Traffic%20Rx.png)
+
+* UDP Traffic
+
+![alt text](assets/images/Power%20Consumption/UDP%20Traffic%20Rx.png)
+
+Both Figures show that each measured STA has a similar behavior, only differentiated by the idle current consumption as an offset. We can observe a slightly higher increase of current consumption when using TCP compared to UDP on each STA.
+
+4. Using the Obtained Experimental Values Within simulation Tools
+
+Simulator frameworks, such as ns-3, can take advantage of the current values obtained in the previous section.
+
+* NS-3 energy model: The popular discrete event network simulator ns-3 propose
+a Wi-Fi energy model that provide a detailed framework to estimate the power consumption of Wi-Fi devices by capturing their behavior across different operational states, such as transmission (Tx), reception (Rx), idle, sleep and CCA busy. This energy model is integrated in the simulator Wi-Fi protocol stack, which includes the support of various IEEE 802.11 standards from 802.11a to 802.11ax and allows to take into account the factors of influence of each standards specificity on the power consumption. It also accounts for power-saving mechanisms such as PSM and TWT.
+
+    Despite its versatility, the accuracy of the ns-3 Wi-Fi energy model highly depends on precise calibration with real-world power measurements. Furthermore, the evolution of Wi-Fi technologies require updates to the energy values in order to account for the specificity of each standard. Few studies have considered updating the default values and behavior to modern Wi-Fi devices, particularly those implementing 802.11ac and 802.11ax. This work tries to provide new values and recommendation to improve the accuracy and the realism of future simulations of Wi-Fi architectures.
+
+* Comparing ns-3 current instantiation with our own: The author compare results obtained with the default ns-3 values against results obtained with the ns-3 models instantiated. This paper select the values measured on the most stable STA device (having the smallest standard deviation on all measured current values), the Tp-Link TX20H and then create a simple Wi-Fi scenario consisting in a unique STA associated to an AP, with the same parameters as described in the test-bed.
+
+    Figures below show a comparison of the measured current values for the second experiment for the Tp-Link TX-20H connected in USB3 (TPL3), with the default current values of the ns-3 Wi-Fi energy model (ns-3) and the ns-3 energy model updated with the current values (Facto). Focusing on the transmission, no matter the transport protocol used, the result show that the default ns-3 model can be close to the measured values only for medium data rates, but the model updated with the values offer a similar behavior despite having a slight offset.
+    - Tx TCP ns-3 Comparison
+  
+    ![alt text](assets/images/Power%20Consumption/TCP%20ns-3%20comparison%20Tx.png)
+
+    - TX UDP ns-3 Comparison
+
+    ![alt text](assets/images/Power%20Consumption/UDP%20ns-3%20comparison%20Tx.png)
+
+    - Rx TCP ns-3 Comparison
+  
+    ![alt text](assets/images/Power%20Consumption/TCP%20ns-3%20comparison%20Rx.png)
+
+    - Rx UDP ns-3 Comparison
+
+    ![alt text](assets/images/Power%20Consumption/UDP%20ns-3%20comparison%20Rx.png)
+
+     Results on the reception show a better accuracy of the ns-3 model with higher data-rates. The ns-3 model updated with the current values shows a slightly more comparable behavior with our measurements, but shows differences with medium data rates
+
+
+### Conclusion:
+This paper introduces a comprehensive experimentation protocol for measuring the energy consumption of modern WiFi devices. The results demonstrate the complexity of energy  usage in Wi-Fi networks, especially when considering devices with advanced features like MIMO, channel bonding, and adaptive modulation.
+
+The findings suggest that a careful selection of current values in ns-3 energy model, especially the idle and transmission values, can significantly precise the power consumption and increase the accuracy of energy efficiency improvement studies.
+
+Future work will focus on extending these experiments to more complex network environments and newer Wi-Fi standards, such as 802.11be and also to explore the impact of dynamic network conditions, such as interference and mobility, on energy consumption, as well as a detailed analysis on the current consumption during the wake-up phase of an STA device.
+
 ## Title
 
 ### Background:
