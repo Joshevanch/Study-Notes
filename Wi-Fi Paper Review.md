@@ -349,6 +349,105 @@ In this section, the models explained before are evaluated when applied to the l
 ### Conclusion:
 A prominent use case of AI/ML in communication is traffic prediction, which unlocks advanced network capabilities for self-troubleshooting or proactively saving energy. This paper explored the potential of AI/ML-based traffic prediction in enterprise Wi-Fi networks, linking performance with feasibility. The result showed that finding a suitable measurement granularity is key to keeping mean prediction errors below 25%, also using on-prem trained models for use cases requiring far-future predictions. In terms of cost, the real-time usage of all the studied ML models leads to modest energy consumption values when deployed in commonly available hardware equipment.
 
+## A spatio-temporal prediction methodology based on deep learning and real Wi-Fi measurements
+Shaabanzadeh, Seyedeh Soheila, and Juan Sánchez-González. "A spatio-temporal prediction methodology based on deep learning and real Wi-Fi measurements." Computer Networks (2024): 110569.
+
+
+### Background:
+The recent development of (Big) Data monitoring and analytics technologies is one of the main pillars in cellular/Wi-Fi networks to deal with the new multimedia services that have very strict requirements in terms of reliability, latency, bit error rate, etc. In particular, the capacity to collect information about the users and the network by deploying monitoring tools, and the capacity to extract knowledge of the collected data by means of Artificial Intelligence/Machine Learning (AI/ML) technologies can help the network to be smarter, more intelligent, self-aware, cost-efficient, and self-optimized.
+
+The future network traffic prediction can be useful for supporting different decision-making processes over the network related to network reconfiguration and optimization, such as proactive resource allocation, prevention of congestion/overload situations or activation of load balancing processes to distribute network traffic among multiple cells/APs.
+
+### Proposed Solution: 
+This paper addresses spatio-temporal prediction of a specific Wi-Fi metric by developing an adaptive and context-aware prediction framework. This framework dynamically adjusts to spatial dependencies among APs, enhancing the accuracy and reliability of traffic predictions. This paper compared a wide range of techniques including more recent prediction techniques, alongside single and hybrid NN techniques in terms of prediction accuracy and computational time to achieve more comprehensive result. 
+
+The proposed methodology is evaluated in a real Wi-Fi network with measurements collected from a large number of APs (i.e. 100 APs) over three months. This addresses the challenge of scalability in designing prediction systems for Wi-Fi networks, ensuring that the methodology can effectively handle larger network environments without compromising performance.
+
+### Methodology:
+The architecture of the methodology can be seen on figure below
+![alt text](assets/images/spatio-temporal%20prediction/architecture.png)
+
+* Data collection:
+  * Network measurements collected at the APs are sent to the Wireless LAN Controller (WLC) and stored in a centralized database 
+  * An offline training is ran periodically in order to extract knowledge from the collected data and to keep the model updated
+  * The proposed methodology aims to predict future values of this specific metric in a given AP by using the last several collected measurements
+* Data preparation: 
+  * Automatically determining missing data in some time periods using backlifting, which is filling missing data with the data of previous time period
+  * Normalized the input data so that all values are within the range between 0 and 1.
+  * Calculates the correlation between each AP and all its neighbours. AP neighbours are determined by means of the Neighbour Discovery Protocol (NDP). If the AP has highly correlated neighbors, spatio-temporal prediction is done based on the previous measurements of the AP and also the previous measurements of its highly correlated neighbours to predict  the future value of this specific metric. Otherwise, the proposed methodology makes a temporal based prediction using the 𝐿 previous measurements of this AP
+* Data prediction:
+  * With the data, an offline training is done in order to obtain a function that will be used in the prediction step
+  * For the AP that has highly correlated neighbors, the training is done by using the previous measurements of the corresponding AP and also its corresponding neighbors. 
+  * For the AP with no highly correlated neighbors, the training is done only by using the previous measurements of the corresponding AP.
+* Prediction techniques:
+  * Since, the number of highly correlated neighbors may be different for each AP and time series techniques typically require fixed-size input data, the author utilize padding/truncation method to ensure a consistent input size
+  * The author determine maximum value for neighbors for each AP. If the actual number of neighbor of the AP is higher, the algorithm selects the neighbor APs with the highest correlation and discards the rest
+  * Otherwise, if the actual number of neighbour APs is less than the maximum value of neighbors, the algorithm pads the input data with zeros for missing features corresponding to non-existent neighbours
+  * Both traditional, e.g. Autoregressive Integrated Moving Average (ARIMA) and modern methods, e.g. Long Short Term Memory (LSTM) are used for training time series.
+* Algorithms used:
+  * ARIMA Algorithm: AutoRegressive Integrated Moving Average (ARIMA) algorithm is a popular time series prediction method. In this paper, the author apply ARIMA to measurements of the target AP using a two-step process. First, the appropriate model order is determined using the auto-arima function. Once the optimal order is identified, ARIMA is used with that specific order along with the ‘‘Recursive Sampling’’ technique to improve prediction performance. This method is utilized only for temporal prediction.
+  * RNN Algorithms: Recurrent Neural Networks (RNN) are a class of models effective for time-series prediction due to their ability to recurrently utilize previously processed data, improving prediction accuracy. The RNN techniques thas are used are SimpleRNN (SRNN), Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU). SRNN ability to retain long-term information are limited, while LSTM has better control over data flow and memory retention. However, LSTM requires more computational resources and time due to its complexity. Gated Recurrent Unit (GRU), a variant of LSTM, reduces computational complexity but may sacrifice some long-term memory capacity. A comparison of the RNNalgorithms is performed for both temporal and spatio-temporal prediction
+  * CNN Algorithm:  A possible way to adapt the input data for Convolutional Neural Network (CNN) algorithm is to divide the sequence into multiple input/output patterns, where a certain number of time steps are used as input and a time step is used as output to predict the next step. CNN is used for both temporal and spatio-temporal prediction.
+  * CNN-RNN hybrid algorithm: This architecture, only used for spatio-temporal prediction, combines CNN and RNN to leverage CNN’s spatial feature learning and RNN’s temporal dependency capture. Figure below illustrates the proposed architecture that combines CNN and RNN. From the figure, it can be seen that the CNN architecture integrates the temporal measurements of the 𝑖th AP and its 𝑀 highly correlated APs to analyse spatial dependencies. TheCNN output serves as input for the subsequent RNN phase to predict the metric’s value in the subsequent time period.
+    ![alt text](assets/images/spatio-temporal%20prediction/CNN-RNN.png)
+  * Transformer algorithm: This model is utilized for both temporal and spatio-temporal prediction. The architecture of the model consists of an encoder and a decoder stack. The available data is used as input to the encoder while the decoder operates on the sequence input to produce the decoder output.
+
+### Experiments
+For the evaluationy, real measurements were collected from a total of 100 APs deployed in a University Campus of Universitat Politécnica de Catalunya, located in Barcelona during three months. The collection and management of the measurements is done by means of the Cisco Prime Infrastructure [43]. This tool periodically collects a large amount of AP measurements to capture the network status and centralizes all this information for building statistics useful for prediction purposes, etc. 
+
+The prediction methodology is used here for the prediction of future AP traffic values and transmission failures. The data is preprocessed in a form of time series data for each AP, separately. The prediction methodology makes use of the measurements collected during the weekdays between September 9th, 2019 and December 22th, 2019 from 5:30 to 22:00 for every day with a periodicity 𝑇 = 30 min. This corresponds to 34 time periods per day, resulting in a total of D = 75 days and N = 2550 measurements for each metric.
+
+After pre-processing, the measurements of traffic load and transmission failures for each single AP are obtained. The normalized traffic load is calculated as the number of transmitted packets in each time period (𝑇𝑥𝐶) normalized by the maximum observed value in the measurements data (𝑀𝑎𝑥𝑉). On the other hand, the traffic transmission failures are calculated as the ratio between 𝐹𝑇𝑥 and 𝑆𝑇𝑥 times 𝑆𝑇𝑥𝑅 , 𝐹𝑇𝑥, 𝑆𝑇𝑥 and 𝑆𝑇𝑥𝑅 represent the number of failed transmitted packets, the number of successfully transmitted packets and the number of successfully transmitted packets after retransmissions, respectively..
+
+The features that are used for training:
+* Time: this corresponds to the timestamp when the measurements have been taken (date/time).
+* AP_name: this feature is related to the name of AP (string).
+* Radio_type: it indicates the radio interface where the measurements are taken (string).
+* Number of transmitted packets (TxC): this metric is a counter that is increased every time a MSDU (MAC Service Data Unit) is transmitted (integer).
+* Number of successfully transmitted packets (STx): this metric is a counter that is increased every time a MSDU is transmitted successfully without the need of retransmission (integer).
+* Number of successfully transmitted packets after retransmissions (STxR): this is a counter that is increased every time a MSDU is successfully transmitted after one or more retries (integer).
+* Number of failed transmitted packets (FTx): this metric is a counter that is increased every time a MSDU frame is not transmitted successfully after a maximum number of retransmission attempts (integer).
+
+The features will be preprocessed and normalized as explained before,  the author selected M = 5 as the maximum number of neighbours because considering the five most correlated neighbour APs captures sufficient spatial dependencies for accurate predictions without overwhelming the model with excessive information. Following the dataset preprocessing for each RNN, CNN, and Hybrid model implementation, a validation method called walkforward validation is used. It is suitable for time series data with a 0.3 percentage split. The model is trained by using past data and is validated on the next data point. This process is repeated by updating the training set each time with the most recent data. This helps the model adapt to changes in the time series pattern. The hyperparameters that yield the optimal average result across all validation windows are then selected for the ML prediction models.
+
+The result of the training will be compared. The comparison primarily focuses on evaluating prediction accuracy of the different algorithms. The prediction accuracy is assessed using various metrics, including the R2 Score, Mean Square Error (MSE), Root Mean Square Error (RMSE) and Mean Absolute Error (MAE). The Computational Time (CT), which is the training (TCT) per second, is also compared. 
+
+Hyperparameter tuning is also a crucial step in optimizing the prediction accuracy of DL algorithms. In this paper, the author focused on tuning the hyperparameters that have the most significant impact on prediction accuracy.
+* For CNN,a configuration with 16 kernels and 2 layers exhibited the highest accuracy across the experiments. 
+* For RNN, a configuration with 50 cells in each of the 2 layers demonstrated superior performance and was chosen as the optimal configuration. 
+* For CNN-RNN, a configuration with a batch size of 16 and 100 epochs achieved the highest performance comprised 
+
+### Result
+These are the results of prediction of each model:
+* Temporal Prediction
+  
+![alt text](assets/images/spatio-temporal%20prediction/Temporal%20traffic.png)
+![alt text](assets/images/spatio-temporal%20prediction/Temporal%20failure.png)
+
+As shown in the tables, all the methods yield highly accurate predictions. LSTM stands out slightly with better performance compared to other algorithms. LSTM provides the best prediction accuracy since it has an intrinsic ability to retain memory and capture sequential dependencies that allows it to model these complex relationships effectively.CNN has the worse prediction accuracy because CNN is more adequate for space-based predictions and it is not so suitable for temporal-based prediction.
+
+*  Spatio-temporal prediction
+
+![alt text](image.png)
+![alt text](image-1.png)
+
+As shown in the Tables, the results obtained by the spatio-temporal LSTM, CNN and GRU methodologies provide higher prediction accuracy. the hybrid CNN-LSTM model achieves the highest prediction accuracy for both traffic usage and failures of a target AP. Note also that CNN-SRNN provides a relatively high prediction accuracy with a considerably lower TCT than CNN-LSTM. The PCT for both single and hybrid NN models exhibits minimal difference or is closely matched.
+
+After we get the best model, we can use it for future prediction, either traffic or failure. By accurately forecasting the network metrics such as traffic load and transmission failures, this methodology aims to optimize resource allocation, proactively address maintenance issues, and plan for future capacity needs. This proactive approach not only enhances network reliability and performance but also improves the overall user experience by minimizing downtime and congestion. 
+
+Implementing this methodology in a real network involves defining and addressing Key Performance Indicators (KPIs) that are relevant to the specific network environment and operational requirements. KPIs such as TCT, PCT, prediction accuracy are essential metrics to consider when evaluating the performance of prediction methods in a real network setting. The TCT for training the models was relatively low across all methods, facilitating fast offline training and retraining processes. This ensures that models can be updated frequently. The PCT for both temporal and spatio-temporal prediction was found to be minimal, allowing for almost real-time predictions.
+
+For the scalability involving a greater number of APs (i.e. addition of new APs), it is necessary to collect data for each new AP and its neighbours, pre-process (fill missing data, etc.), calculate correlations and execute trained model. Furthermore, in this scenario, adapting to new circumstances may entail either fine-tuning the model’s trainable parameters or completely retraining it. 
+
+
+### Conclusion:
+Prediction of future values of network metrics (such as future traffic values at the APs, future obtained performance metrics, etc.) can be useful to make proactive decisions over the network by means of e.g. load balancing, proactive resource allocation, congestion control, etc., that can improve the network performance. This paper has proposed a new methodology for the prediction of future values of some specific parameters according to historical measurements and by leveraging space correlations among neighbouring APs. 
+
+The proposed prediction methodology relies on Neural Networks and operates in two steps. First, the collected historical data is used to train the model in an offline process. Then, newly collected data is input into the trained model during the prediction step. Different DL methods have been analysed, including SimpleRNN, CNN, GRU, LSTM and Transformer for both temporal and spatiotemporal prediction tasks. Moreover, hybrid DL algorithms have been proposed, consisting of an initial CNN process to extract spatial correlations and a subsequent RNN step to exploit temporal correlations. 
+
+The proposed methodology has been tested using real data obtained from a Wi-Fi network deployed on a University Campus to predict future AP traffic and transmission failures. The proposed methodology with the hybrid DL methods obtains high prediction accuracy (i.e. average R2 score up to 93.7% and 92.4% for traffic load and failures, respectively) with a relatively small TCT (i.e. in the order of hundreds of seconds) and a reduced PCT (lower than 2 s). In particular, exploiting the spatial correlation among neighbouring APs results in higher prediction accuracy for spatio-temporal predictions. The PCT values for both the temporal and spatio-temporal prediction NN models remain very similar, it means that it can provide real time prediction.
+
+
 ## Title
 
 ### Background:
