@@ -448,7 +448,96 @@ The proposed prediction methodology relies on Neural Networks and operates in tw
 The proposed methodology has been tested using real data obtained from a Wi-Fi network deployed on a University Campus to predict future AP traffic and transmission failures. The proposed methodology with the hybrid DL methods obtains high prediction accuracy (i.e. average R2 score up to 93.7% and 92.4% for traffic load and failures, respectively) with a relatively small TCT (i.e. in the order of hundreds of seconds) and a reduced PCT (lower than 2 s). In particular, exploiting the spatial correlation among neighbouring APs results in higher prediction accuracy for spatio-temporal predictions. The PCT values for both the temporal and spatio-temporal prediction NN models remain very similar, it means that it can provide real time prediction.
 
 
+## Virtual reality traffic prioritization for Wi-Fi quality of service improvement using machine learning classification techniques
+
+Shaabanzadeh, Seyedeh Soheila, et al. "Virtual reality traffic prioritization for Wi-Fi quality of service improvement using machine learning classification techniques." Journal of Network and Computer Applications 230 (2024): 103939.
+
+### Background:
+Latency is a significant issue in Virtual Reality (VR), both in wired and wireless systems. In VR services, a too high latency may cause that the gap between the VR video game and what the user sees becomes excessively large. This gap can lead to motion sickness and degrade the perceived user quality of experience.  Wi-Fi QoS management can significantly enhance user experiences by reducing latency and jitter in real-time applications like gaming, preventing disruptions in immersive experiences, and minimizing lag during access to cloud and edge services
+
+The increasing demand for high data transmission has led to extensive research in creating new mechanisms to identify and classify network traffic. In essence, a precise traffic identification procedure allows the efficient management of existing network resources, thereby permitting more accurate and robust resource allocation schemes.
+
+
+### Proposed Solution: 
+This paper proposes an interactive VR ML traffic classification model in the edge streaming VR scenario. The proposed model evaluates the use of some common classifiers, fed with the features previously extracted, such as flow duration, packet length variance, maximum and minimum segment sizes, window size, round trip time, and packet inter-arrival time. The model is evaluated by using VR traffic traces coming from a multi-user VR scenario, and using single-user traces from a VR framework not included in the training traces. Finally, a Wi-Fi network environment is simulated in order to illustrate how the model can be used to detect VR traffic, and give it higher priority to improve its QoS. In particular, the key contributions of this study are as follows:
+
+
+### Methodology:
+This section describe about the process for the generation of the datasets, selection of the features used for classification, the design of the proposed classifiers, and the aspects related to the tuning the hyperparameters of the
+considered classifiers.
+
+1. Dataset creation
+  
+  The dataset that is used in this paper consists on two different traffic
+datasets, one for VR traffic and one for Non-VR traffic. The
+first VR traffic dataset is related to a range of VR application in various different configurations. The second dataset representing Non-VR traffic focuses on commonly used application types such as non-game videos , and online meetings. 
+   * Network Setup: The network setup consists of a Desktop computer connected to the Access Point (AP) that supports Wi-Fi 6 with an ethernet cable and the clients are connected to the AP via Wi-Fi access point (AP).For VR, The desktop will act as VR server which send downlink data, and the Head Mounted Devices (HMD) will act as VR client which send uplink data to the server. 
+   
+      For Non-VR, the laptop connected to the AP linked to the internet will stream multimedia services. The streaming operation involves sending requests for video and audio content as UL data and in response, downloading video content from multimedia servers as DL data.  Figure below is the network setup
+  ![alt text](assets/images/VR%20classification/setup.png)
+    * Data Collection: VR and Non-VR traffic data are collected respectively in Desktop and laptop. Wireshark is utilized to gather raw traffic data and to save as .pcap files.  During the data collection process, other applications are shutted down to minimize interference. 
+    * Feature Engineering: For feature extraction, first, the author define some short periods of time. Each set of packets within a period is called a ‘sample’. For each sample, the DL and UL data are separated, and then Number of Packets, Total Bytes and statistics such as Minimum, Maximum, Mean, and Standard Deviation for Packet Size and Packet Interarrival Time, are computed for both DL and UL, separately. Besides, of that, the author also added 3 features, which are Ratio of Number of Packets, e Ratio of Total Bytes, and cross correlation, which is calculated from pearson corelation. In addition to extracted features, a binary label is also included in the dataset to identify VR from Non-VR
+
+
+      For feature selection, the author use filter selection using a feature importance method, called permutation importance that is both model-agnostic and easily comprehensible. Based on permutation importance feature selection technique, the importance of each feature has been obtained in each specific dataset with a single sample duration, specific correlation subsample and for each ML classification algorithm.
+
+ 
+2. Traffic classification methods
+
+Traffic classification methods are essential for managing and optimizing network performance by identifying the types of traffic flowing through the network. Below are the classification methods that are used:
+
+* LR: a linear classification algorithm used for binary or multi-class classification that models the probability of an instance belonging to a particular class using a logistic function
+* SVM: a versatile algorithm for classification that finds a hyperplane for best separating data points of different classes in classification 
+* kNN: a simple instance-based learning algorithm that classifies data points based on the majority class among their k nearest neighbors.
+* DT: a tree-like structure where each node represents a decision based on a feature.
+* RF: an ensemble method that consists of multiple decision trees that improves upon the weaknesses of individual decision trees by aggregating their predictions. 
+* NB: a probabilistic classification algorithm based on Bayes’ theorem that assumes independence between features (a ‘‘naïve’’ assumption) and calculates the probability of an instance belonging to a class. NB is simple and efficient
+
+
+### Experiments
+1. Hyperparameter Tuning
+
+    The considered hyperparameters by using GridSearchCV framework, which   incorporates a robust cross-validation approach with a fixed count of three, are listed as below:
+   * ‘‘LR_parameters’’: [‘‘solver’’: [‘liblinear’, ‘saga’], ‘C’: [0.1,1]]
+   * ‘‘SVM_parameters’’: [‘kernel’: [‘rbf’,‘sigmoid’], ‘C’: [0.1, 1]]
+   * ‘‘kNN_parameters’’: [‘n_neighbors’: [5,10], ‘weights’: [‘uniform’, ‘distance’]]
+   * ‘‘DT_parameters’’: [‘min_samples_split’: [5,8], ‘max_depth’: [5,10]]
+   * ‘‘RF_parameters’’: [‘n_estimators’: [5,20,50], ‘min_samples_split’: [5,8], ‘max_depth’: [5,10]]
+   * ‘‘NB_parameters’’: [‘var_smoothing’: np.logspace(0,-9, num = 100)]
+
+2. Classification Result
+
+    After doing hyperparameter tuning for each of the method, the data are then classified. Table below is the result of the classification:
+
+    ![alt text](assets/images/VR%20classification/result.png)
+    
+    From the result, it can be seen that RF classifier has the most accurate prediction followed by DT. These two models will be used for classifying the traffic to prioritize for VR traffic
+
+3.  Testing the model
+      
+      The classification model is tested using packet traces of three users playing VR games in a multi-user experimental setup like shown in figure below.
+      
+      ![alt text](assets/images/VR%20classification/testing%20the%20model.png) 
+      
+      For each user, in label prediction, first the feature extraction model is applied on packet arrivals to obtain samples in which the features are computed and then, the classification model to obtain whether the model can correctly predict its type or not. From 128 samples of the first user  that was playing a VR game, 127 samples are correctly classified and only one is misclassified when applying the RF classifier, while with DT, 126 samples are predicted in a correct class and 2 misclassified. For computational time, it takes approximately 0.7670 s for feature extraction and 0.0131 s for classification using a DT classifier. The computational time increases slightly to 0.0240 s when using a RF classifier. Thus, the total computational time remains below 1 s for each sample.
+
+4. Wi-Fi QoS enhancement through the prioritization of VR traffic
+
+      In this section, network simulator will be used to analyze the impact that VR traffic identification can have in current Wi-Fi networks. We employ an extended version of the C++ simulator, which allows to simulate Wi-Fi 6 networks. The scenario consists of an Access Point (AP) and two Stations (STAs). The following MCS are used: 1024-QAM 5/6 for the first STA, and 256-QAM 5/6 for the second one, both use 80 MHz channels on the 5 GHz band. The first STA is using VR and the  second STA is receiving non-VR background traffic. 
+      
+      To showcase the impact that traffic identification can have in Wi-Fi QoS, the AP will detect whether the traffic is VR or BG, and prioritize the first one accordingly, ignoring all BG packets until all VR packets are transmitted. After applying the classification model and determining the sample is VR, all arriving packets with the same source and destination IP will receive high priority from the AP and will be transmitted
+
+      ![alt text](assets/images/VR%20classification/system%20operation.png)
+
+      Figure below shows the median and worst-case packet delay (99th percentile) for both VR traffic and BG traffic with and without VR prioritization active in the DL. Once VR prioritization is active, VR delay decreases in all cases, and for 400 Mbps we can observe a 76.27% decrease, leading to a delay of less than 10 ms, and a smoother experience for the player. For BG traffic on the other hand, prioritization leads to an increase in the delay. Prioritizing one type of traffic will lead to worse delays for other traffic types. However, BG traffic could be a file download or video streaming through Youtube, which either do not have strict latency requirements (former) or can compensate through the use of buffering (latter), which VR traffic cannot use. With this approach, VR traffic delays is 4.2x lower than without prioritization, with only a 2.3x higher delay in the BG traffic
+      ![alt text](assets/images/VR%20classification/comparison.png)
+
+### Conclusion:
+Interactive XR/VR traffic identification over Wi-Fi can be helpful to decrease latency for XR users, improving network QoS and user experience. In general, this paper demonstrates that the ML-based traffic classification method offers a compelling balance between accuracy and computational efficiency. In our testing phase using the DT or RF classifier, we achieved an accuracy higher than 0.984 with a computational time under 1 s per sample. This indicates that the computational time is moderate, making it suitable for long-lasting real-time applications. Secondly, a network simulator is utilized to investigate the potential impact of VR traffic identification in existing Wi-Fi networks. In a scenario involving an AP and two Stations (STAs), the first STA engaged in playing a VR game using ALVR, while the second STA received non-VR background traffic. The AP was configured to detect whether the traffic is VR or BG, and prioritize VR traffic, disregarding BG packets until all VR packets were transmitted. With this prioritization approach, we achieved VR traffic delays 4.2 times lower than without prioritization, accompanied by only a 2.3 times higher delay in the BG traffic.
+
+
 ## Title
+
 
 ### Background:
 
